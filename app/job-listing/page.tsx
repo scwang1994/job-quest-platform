@@ -44,8 +44,13 @@ const jobs = [
 ];
 
 export default function JobListings() {
-  const [selectedRecruiter, setSelectedRecruiter] = useState(null);
-
+  type Recruiter = {
+    name: string;
+    riskLevel: string;
+    creditRating: number;
+  };
+  
+  const [selectedRecruiter, setSelectedRecruiter] = useState<Recruiter | null>(null);
   return (
     <div className="min-h-screen bg-yellow-50 font-['Press Start 2P'] text-gray-800">
       <TopBar />

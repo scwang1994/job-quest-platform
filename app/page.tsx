@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import "@fontsource/press-start-2p";
 
-const JobPlatform: React.FC = () => {
+const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-yellow-50 flex flex-col items-center justify-center font-['Press Start 2P'] p-6 text-center text-gray-800">
       <h1 className="text-2xl md:text-4xl text-blue-900 mb-6 border-b-4 border-blue-900 pb-2">
@@ -46,4 +46,4 @@ const JobPlatform: React.FC = () => {
   );
 };
 
-export default JobPlatform;
+export default Home;
