@@ -1,41 +1,44 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
+import { setCookie } from "cookies-next";
+import fs from "fs";
 import path from "path";
 
-// 設定資料庫路徑
-const dbFile = path.join(process.cwd(), "data", "db.json");
-const adapter = new JSONFile<{ users: { email: string; password: string }[] }>(dbFile);
-const db = new Low(adapter, { users: [] });
+interface User {
+  name: string;
+  email: string;
+  password: string;
+  isVerify: string[];
+  isVerified: string[];
+}
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const { email, password } = req.body;
 
-    // 載入資料庫
-    await db.read();
-
-    // 如果資料庫為空，初始化資料結構
-    if (!db.data) {
-      db.data = { users: [] };
-      await db.write();
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    console.log("Database content:", db.data);
+    const dbPath = path.join(process.cwd(), "data", "db.json");
+    const db = JSON.parse(fs.readFileSync(dbPath, "utf8"));
 
-    // 檢查使用者是否存在
-    const user = db.data.users.find(
-      (u: { email: string; password: string }) =>
-        u.email === email && u.password === password
-    );
-
-    if (user) {
-      res.status(200).json({ message: "Login successful!" });
-    } else {
-      res.status(401).json({ message: "Invalid email or password." });
+    if (!db.users || !Array.isArray(db.users)) {
+      return res.status(500).json({ error: "Invalid database structure: 'users' not found" });
     }
+
+    const user = db.users.find((u: User) => u.email === email && u.password === password);
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    setCookie("name", user.name, { req, res });
+    setCookie("email", user.email, { req, res });
+    setCookie("isVerifiedLength", user.isVerified.length, { req, res }); // 修正為 isVerified 長度
+
+    return res.status(200).json({ message: "Login successful" });
   } else {
     res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 }

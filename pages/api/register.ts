@@ -5,7 +5,7 @@ import path from "path";
 
 // 設定資料庫路徑
 const dbFile = path.join(process.cwd(), "data", "db.json");
-const adapter = new JSONFile<{ users: { email: string; password: string }[] }>(dbFile);
+const adapter = new JSONFile<{ users: { email: string; password: string; isVerify: any[] }[] }>(dbFile);
 const db = new Low(adapter, { users: [] });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 新增使用者資料
-    db.data.users.push({ email, password });
+    db.data.users.push({ email, password, isVerify: [] });
     await db.write();
 
     res.status(201).json({ message: "Registration successful!" });
