@@ -1,14 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
-
-const dbPath = path.join(process.cwd(), "data", "db.json");
+import inMemoryDB from "../../utils/inMemoryDB";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     try {
-      const data = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
-      res.status(200).json(data.jobs || []);
+      res.status(200).json(inMemoryDB.jobs);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to fetch jobs." });
@@ -17,15 +13,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
       const job = req.body;
 
-      // 讀取現有的資料
-      const data = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
-      data.jobs = data.jobs || [];
-
       // 新增工作資料
-      data.jobs.push(job);
-
-      // 寫入更新後的資料
-      fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+      inMemoryDB.jobs.push(job);
 
       res.status(200).json({ message: "Job added successfully!" });
     } catch (error) {

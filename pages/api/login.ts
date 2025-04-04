@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { setCookie } from "cookies-next";
-import fs from "fs";
-import path from "path";
+import inMemoryDB from "../../utils/inMemoryDB";
 
 interface User {
   name: string;
@@ -19,24 +18,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const dbPath = path.join(process.cwd(), "data", "db.json");
-    const db = JSON.parse(fs.readFileSync(dbPath, "utf8"));
+    try {
+      const user = inMemoryDB.users.find((u: User) => u.email === email && u.password === password);
 
-    if (!db.users || !Array.isArray(db.users)) {
-      return res.status(500).json({ error: "Invalid database structure: 'users' not found" });
+      if (!user) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      setCookie("name", user.name, { req, res });
+      setCookie("email", user.email, { req, res });
+      setCookie("isVerifiedLength", user.isVerified.length, { req, res });
+
+      return res.status(200).json({ message: "Login successful" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Failed to login" });
     }
-
-    const user = db.users.find((u: User) => u.email === email && u.password === password);
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    setCookie("name", user.name, { req, res });
-    setCookie("email", user.email, { req, res });
-    setCookie("isVerifiedLength", user.isVerified.length, { req, res }); // 修正為 isVerified 長度
-
-    return res.status(200).json({ message: "Login successful" });
   } else {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
