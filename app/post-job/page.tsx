@@ -47,6 +47,27 @@ export default function PostJob() {
     }, 1500);
   };
 
+  const handleApiSubmit = async () => {
+    try {
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to post job");
+      }
+
+      alert("🎯 Job successfully posted to the database!");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Failed to post job. Please try again.");
+    }
+  };
+
   const isFormComplete =
     form.title &&
     form.company &&
@@ -55,13 +76,13 @@ export default function PostJob() {
     form.description &&
     isVerified;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormComplete) {
       alert("Please complete all fields and verify transfer.");
       return;
     }
-    alert("🎯 Job successfully posted!");
+    await handleApiSubmit();
   };
 
   return (

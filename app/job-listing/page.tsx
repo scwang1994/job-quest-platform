@@ -1,47 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "@fontsource/press-start-2p";
 import TopBar from "@/components/Top-Bar";
-
-const jobs = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    company: "PixelSoft",
-    location: "Remote",
-    salary: "$3000/month",
-    recruiter: {
-      name: "Alice from PixelSoft",
-      riskLevel: "MEDIUM",
-      creditRating: 3,
-    },
-  },
-  {
-    id: 2,
-    title: "Game Designer",
-    company: "RetroWorks",
-    location: "New York",
-    salary: "$4000/month",
-    recruiter: {
-      name: "Bob from RetroWorks",
-      riskLevel: "LOW",
-      creditRating: 5,
-    },
-  },
-  {
-    id: 3,
-    title: "QA Tester",
-    company: "BitQuest",
-    location: "Remote",
-    salary: "$2500/month",
-    recruiter: {
-      name: "Carol from BitQuest",
-      riskLevel: "HIGH",
-      creditRating: 2,
-    },
-  },
-];
 
 export default function JobListings() {
   type Recruiter = {
@@ -49,8 +10,25 @@ export default function JobListings() {
     riskLevel: string;
     creditRating: number;
   };
-  
+
+  type Job = {
+    id: number;
+    title: string;
+    company: string;
+    location: string;
+    salary: string;
+    recruiter: Recruiter;
+  };
+
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedRecruiter, setSelectedRecruiter] = useState<Recruiter | null>(null);
+
+  useEffect(() => {
+    fetch("/api/jobs") // API 路徑保持不變
+      .then((response) => response.json())
+      .then((data) => setJobs(data));
+  }, []);
+
   return (
     <div className="min-h-screen bg-yellow-50 font-['Press Start 2P'] text-gray-800">
       <TopBar />
